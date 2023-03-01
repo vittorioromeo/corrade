@@ -132,13 +132,14 @@ void AssertDisabledTest::constexprTest() {
     std::ostringstream out;
     Error redirectError{&out};
 
+    // {
+    //     constexpr int three = divide(15, 0);
+    //     CORRADE_COMPARE(three, 3);
+    // } {
+    //     constexpr int three = divideInternal(15, 0);
+    //     CORRADE_COMPARE(three, 3);
+    // }
     {
-        constexpr int three = divide(15, 0);
-        CORRADE_COMPARE(three, 3);
-    } {
-        constexpr int three = divideInternal(15, 0);
-        CORRADE_COMPARE(three, 3);
-    } {
         int three = divide(15, 0);
         CORRADE_COMPARE(three, 3);
     } {

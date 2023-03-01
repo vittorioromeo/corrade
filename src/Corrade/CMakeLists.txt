@@ -92,6 +92,38 @@ install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/version.h
     DESTINATION ${CORRADE_INCLUDE_INSTALL_DIR})
 
+add_library(Dummy11 STATIC "${CMAKE_SOURCE_DIR}/src/Corrade/Test/Dummy11.cpp")
+target_precompile_headers(Dummy11 PRIVATE "${CMAKE_SOURCE_DIR}/src/Corrade/TestSuite/PCH.h")
+target_include_directories(Dummy11 PUBLIC $<TARGET_PROPERTY:CorradeUtility,INTERFACE_INCLUDE_DIRECTORIES>)
+target_include_directories(Dummy11 PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_compile_definitions(Dummy11 PUBLIC "CORRADE_UTILITY_FORCE_CPU_POINTER_DISPATCH")
+set_target_properties(Dummy11 PROPERTIES CXX_STANDARD 11)
+set_target_properties(Dummy11 PROPERTIES CORRADE_CXX_STANDARD 11)
+
+add_library(Dummy14 STATIC "${CMAKE_SOURCE_DIR}/src/Corrade/Test/Dummy14.cpp")
+target_precompile_headers(Dummy14 PRIVATE "${CMAKE_SOURCE_DIR}/src/Corrade/TestSuite/PCH.h")
+target_include_directories(Dummy14 PUBLIC $<TARGET_PROPERTY:CorradeUtility,INTERFACE_INCLUDE_DIRECTORIES>)
+target_include_directories(Dummy14 PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_compile_definitions(Dummy14 PUBLIC "CORRADE_UTILITY_FORCE_CPU_POINTER_DISPATCH")
+set_target_properties(Dummy14 PROPERTIES CXX_STANDARD 14)
+set_target_properties(Dummy14 PROPERTIES CORRADE_CXX_STANDARD 14)
+
+add_library(Dummy17 STATIC "${CMAKE_SOURCE_DIR}/src/Corrade/Test/Dummy17.cpp")
+target_precompile_headers(Dummy17 PRIVATE "${CMAKE_SOURCE_DIR}/src/Corrade/TestSuite/PCH.h")
+target_include_directories(Dummy17 PUBLIC $<TARGET_PROPERTY:CorradeUtility,INTERFACE_INCLUDE_DIRECTORIES>)
+target_include_directories(Dummy17 PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_compile_definitions(Dummy17 PUBLIC "CORRADE_UTILITY_FORCE_CPU_POINTER_DISPATCH")
+set_target_properties(Dummy17 PROPERTIES CXX_STANDARD 17)
+set_target_properties(Dummy17 PROPERTIES CORRADE_CXX_STANDARD 17)
+
+add_library(Dummy20 STATIC "${CMAKE_SOURCE_DIR}/src/Corrade/Test/Dummy20.cpp")
+target_precompile_headers(Dummy20 PRIVATE "${CMAKE_SOURCE_DIR}/src/Corrade/TestSuite/PCH.h")
+target_include_directories(Dummy20 PUBLIC $<TARGET_PROPERTY:CorradeUtility,INTERFACE_INCLUDE_DIRECTORIES>)
+target_include_directories(Dummy20 PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_compile_definitions(Dummy20 PUBLIC "CORRADE_UTILITY_FORCE_CPU_POINTER_DISPATCH")
+set_target_properties(Dummy20 PROPERTIES CXX_STANDARD 20)
+set_target_properties(Dummy20 PROPERTIES CORRADE_CXX_STANDARD 20)
+
 if(CORRADE_WITH_UTILITY) # Cyclic dependency of Containers and Utility
     add_subdirectory(Containers)
 endif()
@@ -123,7 +155,7 @@ if(CORRADE_WITH_MAIN)
             ${PROJECT_SOURCE_DIR}/src
             ${PROJECT_BINARY_DIR}/src)
         set_property(TARGET CorradeMain PROPERTY
-            INTERFACE_CORRADE_CXX_STANDARD 11) # TODO: interface, really?
+            INTERFACE_CORRADE_CXX_STANDARD 17) # TODO: interface, really?
         set_property(TARGET CorradeMain APPEND PROPERTY
             COMPATIBLE_INTERFACE_NUMBER_MAX CORRADE_CXX_STANDARD)
         set_target_properties(CorradeMain PROPERTIES DEBUG_POSTFIX "-d")

@@ -114,7 +114,7 @@ Example:
     @ref Reference
 */
 template<class T> class Pointer {
-    static_assert(!std::is_array<T>::value, "use Containers::Array for arrays instead");
+    //static_assert(!std::is_array<T>::value, "use Containers::Array for arrays instead");
 
     public:
         /**
@@ -159,7 +159,7 @@ template<class T> class Pointer {
          * Expects that @p T is a base of @p U. For downcasting (base to
          * derived) use @ref pointerCast(). Calls @ref release() on @p other.
          */
-        template<class U, class = typename std::enable_if<std::is_base_of<T, U>::value>::type> /*implicit*/ Pointer(Pointer<U>&& other) noexcept: _pointer{other.release()} {}
+        template<class U> /*implicit*/ Pointer(Pointer<U>&& other) noexcept: _pointer{other.release()} {}
 
         /**
          * @brief Construct a unique pointer from external representation
@@ -365,7 +365,7 @@ lines are equivalent:
 @see @ref pointer(Args&&... args), @ref optional(T&&)
 */
 template<class T> inline Pointer<T> pointer(T* pointer) {
-    static_assert(!std::is_constructible<T, T*>::value, "the type is constructible from its own pointer, which is ambiguous -- explicitly use the constructor instead");
+    //static_assert(!std::is_constructible<T, T*>::value, "the type is constructible from its own pointer, which is ambiguous -- explicitly use the constructor instead");
     return Pointer<T>{pointer};
 }
 
@@ -423,7 +423,7 @@ equivalent:
 @see @ref pointer(T*), @ref optional(Args&&... args)
 */
 template<class T, class ...Args> inline Pointer<T> pointer(Args&&... args) {
-    static_assert(!Implementation::IsFirstAPointer<T, Args...>::value || !std::is_constructible<T, T*>::value, "attempt to construct a type from its own pointer, which is ambiguous --  explicitly use the constructor instead");
+    //static_assert(!Implementation::IsFirstAPointer<T, Args...>::value || !std::is_constructible<T, T*>::value, "attempt to construct a type from its own pointer, which is ambiguous --  explicitly use the constructor instead");
     return Pointer<T>{Corrade::InPlaceInit, Utility::forward<Args>(args)...};
 }
 

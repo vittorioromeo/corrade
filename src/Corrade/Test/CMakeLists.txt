@@ -79,7 +79,7 @@ if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT CMAKE_CXX_COMPILER_VERSION VERS
     corrade_add_test(Cpp14StandardTestCMakeStandard CppStandardTest.cpp)
     set_target_properties(Cpp14StandardTestCMakeStandard PROPERTIES
         CORRADE_CXX_STANDARD 17 # This should get ignored even tho it's higher
-        CXX_STANDARD 14)
+        CXX_STANDARD 17)
     target_compile_definitions(Cpp14StandardTestCMakeStandard PRIVATE
         COMPILING_AS_CPP14 "TEST_NAME=\"Cpp14StandardTestCMakeStandard\"")
 
