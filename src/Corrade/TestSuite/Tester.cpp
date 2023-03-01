@@ -220,6 +220,27 @@ namespace {
     Tester* currentTester = nullptr;
 }
 
+template void Tester::compare(const char*, const int&, const char*, const int&);
+template void Tester::compare(const char*, const bool&, const char*, const bool&);
+
+template void Tester::compareWith(Comparator<int>&&, const char*, const int&, const char*, const int&);
+template void Tester::compareWith(Comparator<int>&, const char*, const int&, const char*, const int&);
+
+template void Tester::compareWith(Comparator<int>&&, const char*, const unsigned long long&, const char*, const int&);
+template void Tester::compareWith(Comparator<int>&, const char*, const unsigned long long&, const char*, const int&);
+
+template void Tester::compareWith(Comparator<bool>&&, const char*, const bool&, const char*, const bool&);
+template void Tester::compareWith(Comparator<bool>&, const char*, const bool&, const char*, const bool&);
+
+template void Tester::compareWith(Comparator<unsigned long long>&&, const char*, const unsigned long long&, const char*, const unsigned long long&);
+template void Tester::compareWith(Comparator<unsigned long long>&, const char*, const unsigned long long&, const char*, const unsigned long long&);
+
+template void Tester::compareWith(Comparator<std::string>&&, const char*, const std::string&, const char*, const char(&)[1]);
+template void Tester::compareWith(Comparator<std::string>&, const char*, const std::string&, const char*, const char(&)[1]);
+
+template void Tester::compareWith(Comparator<int*>&&, const char*, int* const&, const char*, int* const&);
+template void Tester::compareWith(Comparator<int*>&, const char*, int* const&, const char*, int* const&);
+
 Tester::Tester(const TesterConfiguration& configuration): _state{new TesterState{configuration}} {
     CORRADE_ASSERT(_argc, "TestSuite::Tester: command-line arguments not available", );
 }

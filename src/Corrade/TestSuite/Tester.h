@@ -1339,7 +1339,7 @@ class CORRADE_TESTSUITE_EXPORT Tester {
         int exec(Tester* previousTester, std::ostream* logOutput, std::ostream* errorOutput);
 
         /* Compare two identical types without explicit type specification */
-        template<class T> void compare(const char* actual, const T& actualValue, const char* expected, const T& expectedValue) {
+        template<class T> CORRADE_TESTSUITE_EXPORT void compare(const char* actual, const T& actualValue, const char* expected, const T& expectedValue) {
             compareAs<T, T, T>(actual, actualValue, expected, expectedValue);
         }
 
@@ -1363,8 +1363,8 @@ class CORRADE_TESTSUITE_EXPORT Tester {
         }
 
         /* Compare two different types with explicit comparator specification */
-        template<class T, class U, class V> void compareWith(Comparator<T>& comparator, const char* actual, const U& actualValue, const char* expected, const V& expectedValue);
-        template<class T, class U, class V> void compareWith(Comparator<T>&& comparator, const char* actual, const U& actualValue, const char* expected, const V& expectedValue) {
+        template<class T, class U, class V> CORRADE_TESTSUITE_EXPORT void compareWith(Comparator<T>& comparator, const char* actual, const U& actualValue, const char* expected, const V& expectedValue);
+        template<class T, class U, class V> CORRADE_TESTSUITE_EXPORT void compareWith(Comparator<T>&& comparator, const char* actual, const U& actualValue, const char* expected, const V& expectedValue) {
             return compareWith<T, U, V>(comparator, actual, actualValue, expected, expectedValue);
         }
 
@@ -1541,6 +1541,27 @@ class CORRADE_TESTSUITE_EXPORT Tester {
 
         Containers::Pointer<TesterState> _state;
 };
+
+extern template void Tester::compare(const char*, const int&, const char*, const int&);
+extern template void Tester::compare(const char*, const bool&, const char*, const bool&);
+
+extern template void Tester::compareWith(Comparator<int>&&, const char*, const int&, const char*, const int&);
+extern template void Tester::compareWith(Comparator<int>&, const char*, const int&, const char*, const int&);
+
+extern template void Tester::compareWith(Comparator<int>&&, const char*, const unsigned long long&, const char*, const int&);
+extern template void Tester::compareWith(Comparator<int>&, const char*, const unsigned long long&, const char*, const int&);
+
+extern template void Tester::compareWith(Comparator<bool>&&, const char*, const bool&, const char*, const bool&);
+extern template void Tester::compareWith(Comparator<bool>&, const char*, const bool&, const char*, const bool&);
+
+extern template void Tester::compareWith(Comparator<unsigned long long>&&, const char*, const unsigned long long&, const char*, const unsigned long long&);
+extern template void Tester::compareWith(Comparator<unsigned long long>&, const char*, const unsigned long long&, const char*, const unsigned long long&);
+
+extern template void Tester::compareWith(Comparator<std::string>&&, const char*, const std::string&, const char*, const char(&)[1]);
+extern template void Tester::compareWith(Comparator<std::string>&, const char*, const std::string&, const char*, const char(&)[1]);
+
+extern template void Tester::compareWith(Comparator<int*>&&, const char*, int* const&, const char*, int* const&);
+extern template void Tester::compareWith(Comparator<int*>&, const char*, int* const&, const char*, int* const&);
 
 /**
 @brief Instanced test case description with source location
@@ -2120,6 +2141,16 @@ some caveats. See @ref CORRADE_VERIFY() for details.
     )
 #endif
 
+template <typename T>
+void printer(void* comparator, ComparisonStatusFlags flags, Tester::Debug& out, const char* actual, const char* expected)
+{
+#ifndef CORRADE_BUILD_DEPRECATED
+    static_cast<Comparator<T>*>(comparator)->printMessage(flags, out, actual, expected);
+#else
+    Implementation::printMessage<Comparator<T>>(*static_cast<Comparator<T>*>(comparator), flags, out, actual, expected);
+#endif
+}
+
 template<class T, class U, class V> void Tester::compareWith(Comparator<T>& comparator, const char* actual, const U& actualValue, const char* expected, const V& expectedValue) {
     /* Store (references to) possibly implicitly-converted values,
        otherwise the implicit conversion would when passing them to operator(),
@@ -2139,13 +2170,7 @@ template<class T, class U, class V> void Tester::compareWith(Comparator<T>& comp
         ;
 
     printComparisonMessageInternal(status, actual, expected,
-        [](void* comparator, ComparisonStatusFlags flags, Debug& out, const char* actual, const char* expected) {
-            #ifndef CORRADE_BUILD_DEPRECATED
-            static_cast<Comparator<T>*>(comparator)->printMessage(flags, out, actual, expected);
-            #else
-            Implementation::printMessage<Comparator<T>>(*static_cast<Comparator<T>*>(comparator), flags, out, actual, expected);
-            #endif
-        }, Implementation::diagnosticSaver<T>(), &comparator);
+        &printer<T>, Implementation::diagnosticSaver<T>(), &comparator);
 }
 
 template<class T> void Tester::verify(const char* expression, T&& value) {

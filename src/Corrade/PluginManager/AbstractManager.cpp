@@ -53,9 +53,8 @@
 #ifndef CORRADE_TARGET_WINDOWS
 #include <dlfcn.h>
 #else
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN /* Otherwise `#define interface struct` breaks everything */
-#endif
+#define WIN32_LEAN_AND_MEAN 1
+#define VC_EXTRALEAN
 #include <windows.h>
 #include "Corrade/Utility/Unicode.h"
 #endif

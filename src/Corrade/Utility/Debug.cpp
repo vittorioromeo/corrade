@@ -48,6 +48,8 @@
 
 /* WINAPI-based colored output on Windows */
 #ifndef CORRADE_UTILITY_USE_ANSI_COLORS
+#define WIN32_LEAN_AND_MEAN 1
+#define VC_EXTRALEAN
 #include <windows.h>
 #include <wincon.h>
 #endif

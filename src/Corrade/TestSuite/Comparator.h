@@ -33,6 +33,7 @@
 #include "Corrade/TestSuite/visibility.h"
 #include "Corrade/Utility/Assert.h"
 #include "Corrade/Utility/Debug.h"
+#include <string>
 
 namespace Corrade { namespace TestSuite {
 
@@ -202,9 +203,9 @@ In the above case, the message will look for example like this:
 
 @include testsuite-save-diagnostic.ansi
 */
-template<class T> class Comparator {
+template<class T> CORRADE_TESTSUITE_EXPORT class Comparator {
     public:
-        explicit Comparator();
+        CORRADE_TESTSUITE_EXPORT explicit Comparator();
 
         /**
          * @brief Compare two values
@@ -213,7 +214,7 @@ template<class T> class Comparator {
          * returned. In addition, if the comparison desires to print additional
          * messages or save diagnostic file, it can include other flags.
          */
-        ComparisonStatusFlags operator()(const T& actual, const T& expected);
+        CORRADE_TESTSUITE_EXPORT ComparisonStatusFlags operator()(const T& actual, const T& expected);
 
         /**
          * @brief Print a message
@@ -228,7 +229,7 @@ template<class T> class Comparator {
          * (and the function not being called at all if none of the other
          * above-mentioned flags are present).
          */
-        void printMessage(ComparisonStatusFlags status, Utility::Debug& out, const char* actual, const char* expected);
+        CORRADE_TESTSUITE_EXPORT void printMessage(ComparisonStatusFlags status, Utility::Debug& out, const char* actual, const char* expected);
 
         /**
          * @brief Save a diagnostic
@@ -248,16 +249,21 @@ template<class T> class Comparator {
          * @ref ComparisonStatusFlag::Diagnostic is not present as well).
          */
         #ifdef DOXYGEN_GENERATING_OUTPUT
-        void saveDiagnostic(ComparisonStatusFlags status, Utility::Debug& out, Containers::StringView path);
+        CORRADE_TESTSUITE_EXPORT void saveDiagnostic(ComparisonStatusFlags status, Utility::Debug& out, Containers::StringView path);
         #else
         /* using const& to avoid having to include StringView.h */
-        void saveDiagnostic(ComparisonStatusFlags status, Utility::Debug& out, const Containers::StringView& path);
+        CORRADE_TESTSUITE_EXPORT void saveDiagnostic(ComparisonStatusFlags status, Utility::Debug& out, const Containers::StringView& path);
         #endif
 
     private:
         const T* actualValue;
         const T* expectedValue;
 };
+
+extern template class Comparator<int>;
+extern template class Comparator<bool>;
+extern template class Comparator<std::string>;
+extern template class Comparator<Containers::StringView>;
 
 template<class T> Comparator<T>::Comparator(): actualValue(), expectedValue() {}
 

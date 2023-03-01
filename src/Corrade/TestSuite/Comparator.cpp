@@ -26,7 +26,10 @@
 
 #include "Comparator.h"
 
+#include "Corrade/Utility/Debug.h"
+#include "Corrade/Utility/DebugStl.h"
 #include "Corrade/Containers/EnumSet.hpp"
+#include "Corrade/Containers/StringView.h"
 
 namespace Corrade { namespace TestSuite {
 
@@ -56,5 +59,10 @@ Utility::Debug& operator<<(Utility::Debug& debug, const ComparisonStatusFlags va
         ComparisonStatusFlag::Diagnostic,
         ComparisonStatusFlag::VerboseDiagnostic});
 }
+
+template class Comparator<int>;
+template class Comparator<bool>;
+template class Comparator<std::string>;
+template class Comparator<Containers::StringView>;
 
 }}
