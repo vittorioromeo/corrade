@@ -32,7 +32,6 @@
  */
 
 #include <iosfwd>
-#include <type_traits>
 #include <utility> /** @todo consider putting this away as well (900 LOC) */
 
 #include "Corrade/Containers/EnumSet.h"

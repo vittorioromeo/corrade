@@ -26,8 +26,6 @@
     DEALINGS IN THE SOFTWARE.
 */
 
-#include <type_traits>
-
 #include "Corrade/configure.h"
 
 /** @file
@@ -36,6 +34,17 @@
  */
 
 namespace Corrade { namespace Utility {
+
+namespace Implementation {
+    template <typename T> struct NonDeducible { typedef T type; };
+
+    template <typename T> struct RemoveReference      { typedef T type; };
+    template <typename T> struct RemoveReference<T&>  { typedef T type; };
+    template <typename T> struct RemoveReference<T&&> { typedef T type; };
+
+    template <typename T> struct IsLvalueReference     { enum { value = false }; };
+    template <typename T> struct IsLvalueReference<T&> { enum { value = true }; };
+}
 
 /* Basically a copy of bits/move.h from libstdc++ */
 
@@ -48,7 +57,7 @@ is used to implement perfect forwarding, but without the
 @cpp #include <utility> @ce dependency and guaranteed to be @cpp constexpr @ce
 even in C++11.
 */
-template<class T> constexpr T&& forward(typename std::remove_reference<T>::type& t) noexcept {
+template<class T> constexpr T&& forward(typename Implementation::NonDeducible<T>::type& t) noexcept {
     return static_cast<T&&>(t);
 }
 
@@ -61,10 +70,10 @@ is used to implement perfect forwarding, but without the
 @cpp #include <utility> @ce dependency and guaranteed to be @cpp constexpr @ce
 even in C++11.
 */
-template<class T> constexpr T&& forward(typename std::remove_reference<T>::type&& t) noexcept {
+template<class T> constexpr T&& forward(typename Implementation::RemoveReference<T>::type&& t) noexcept {
     /* bits/move.h in libstdc++ has this and it makes sense to have it here
        also, although I can't really explain what accidents it prevents */
-    static_assert(!std::is_lvalue_reference<T>::value, "T can't be a lvalue reference");
+    static_assert(!Implementation::IsLvalueReference<T>::value, "T can't be a lvalue reference");
     return static_cast<T&&>(t);
 }
 
@@ -77,8 +86,8 @@ Equivalent to @m_class{m-doc-external} [std::move()](https://en.cppreference.com
 but without the @cpp #include <utility> @ce dependency and guaranteed to be
 @cpp constexpr @ce even in C++11.
 */
-template<class T> constexpr typename std::remove_reference<T>::type&& move(T&& t) noexcept {
-    return static_cast<typename std::remove_reference<T>::type&&>(t);
+template<class T> constexpr typename Implementation::RemoveReference<T>::type&& move(T&& t) noexcept {
+    return static_cast<typename Implementation::RemoveReference<T>::type&&>(t);
 }
 
 }}
