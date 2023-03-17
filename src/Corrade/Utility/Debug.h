@@ -32,7 +32,8 @@
  */
 
 #include <iosfwd>
-#include <utility> /** @todo consider putting this away as well (900 LOC) */
+// #include <utility> /** @todo consider putting this away as well (900 LOC) */
+#include <bits/stl_pair.h>
 
 #include "Corrade/Containers/EnumSet.h"
 #include "Corrade/Utility/TypeTraits.h"
@@ -1138,10 +1139,10 @@ class CORRADE_UTILITY_EXPORT Fatal: public Error {
          * Sets output to @ref std::cerr. The @p exitCode is passed to
          * @ref std::exit() on destruction.
          */
-        Fatal(int exitCode = 1, Flags flags = {}): Error{flags}, _exitCode{exitCode} {}
+        Fatal(int exitCode = 1, Flags flags = {});
 
         /** @overload */
-        Fatal(Flags flags): Fatal{1, flags} {}
+        Fatal(Flags flags);
 
         /**
          * @brief Constructor
@@ -1150,10 +1151,10 @@ class CORRADE_UTILITY_EXPORT Fatal: public Error {
          * @param exitCode      Application exit code to be used on destruction
          * @param flags         Output flags
          */
-        Fatal(std::ostream* output, int exitCode = 1, Flags flags = {}): Error{output, flags}, _exitCode{exitCode} {}
+        Fatal(std::ostream* output, int exitCode = 1, Flags flags = {});
 
         /** @overload */
-        Fatal(std::ostream* output, Flags flags = {}): Fatal{output, 1, flags} {}
+        Fatal(std::ostream* output, Flags flags = {});
 
         /**
          * @brief Destructor

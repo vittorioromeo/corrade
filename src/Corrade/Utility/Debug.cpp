@@ -544,6 +544,14 @@ Error::~Error() {
     cleanupOnDestruction();
 }
 
+Fatal::Fatal(int exitCode, Flags flags): Error{flags}, _exitCode{exitCode} {}
+
+Fatal::Fatal(Flags flags): Fatal{1, flags} {}
+
+Fatal::Fatal(std::ostream* output, int exitCode, Flags flags): Error{output, flags}, _exitCode{exitCode} {}
+
+Fatal::Fatal(std::ostream* output, Flags flags): Fatal{output, 1, flags} {}
+
 /* MSVC in a Release build complains that "destructor never returns, potential
    memory leak". Well, yes, since this is a [[noreturn]] function. */
 #if defined(CORRADE_TARGET_MSVC) && !defined(CORRADE_TARGET_CLANG_CL)

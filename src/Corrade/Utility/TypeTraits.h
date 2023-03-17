@@ -30,8 +30,6 @@
  * @brief Macros @ref CORRADE_LONG_DOUBLE_SAME_AS_DOUBLE, @ref CORRADE_STD_IS_TRIVIALLY_TRAITS_SUPPORTED, @ref CORRADE_SOURCE_LOCATION_BUILTINS_SUPPORTED, @ref CORRADE_HAS_TYPE(), alias @ref Corrade::Utility::IsIterable
  */
 
-#include <type_traits>
-
 #include "Corrade/configure.h"
 
 namespace Corrade { namespace Utility {
@@ -189,10 +187,32 @@ template<class U> class className {                                         \
     template<class T> static char get(T&&, __VA_ARGS__* = nullptr);         \
     static short get(...);                                                  \
     public:                                                                 \
-        enum: bool { value = sizeof(get(std::declval<U>())) == sizeof(char) }; \
+        enum: bool { value = sizeof(get(Corrade::Utility::Implementation::corradeDeclval<U>())) == sizeof(char) }; \
 }
 
 namespace Implementation {
+    template <typename T> T&& corradeDeclval();
+
+    template <typename T> struct RemoveCR            { using type = T; };
+    template <typename T> struct RemoveCR<T&>        { using type = T; };
+    template <typename T> struct RemoveCR<T&&>       { using type = T; };
+    template <typename T> struct RemoveCR<const T&>  { using type = T; };
+    template <typename T> struct RemoveCR<const T&&> { using type = T; };
+    template <typename T> struct RemoveCR<const T>   { using type = T; };
+
+    template <typename T, typename U> struct IsSame { enum { value = false }; };
+    template <typename T> struct IsSame<T, T>       { enum { value = true }; };
+
+    template<typename T, T Value>
+    struct IntegralConstant
+    {
+      static constexpr T                  value = Value;
+      typedef T                           value_type;
+      typedef IntegralConstant<T, Value>   type;
+      constexpr operator value_type() const noexcept { return value; }
+      constexpr value_type operator()() const noexcept { return value; }
+    };
+
     /* As of Eigen 3.4.0, due to these two commits in particular,
         https://gitlab.com/libeigen/eigen/-/commit/c0ca8a9fa3e03ad7ecb270adfe760a1bff7c0829
         https://gitlab.com/libeigen/eigen/-/commit/2bf1a31d811fef2085bad97f98e2d0095136b636
@@ -215,14 +235,14 @@ namespace Implementation {
     };
     template<> struct FineUnlessEigenDevsAttemptedToDisableBeginByMakingItVoid<void> {};
 
-    CORRADE_HAS_TYPE(HasMemberBegin, typename FineUnlessEigenDevsAttemptedToDisableBeginByMakingItVoid<decltype(std::declval<T>().begin())>::Type);
-    CORRADE_HAS_TYPE(HasMemberEnd, decltype(std::declval<T>().end()));
-    CORRADE_HAS_TYPE(HasBegin, decltype(begin(std::declval<T>())));
-    CORRADE_HAS_TYPE(HasEnd, decltype(end(std::declval<T>())));
+    CORRADE_HAS_TYPE(HasMemberBegin, typename FineUnlessEigenDevsAttemptedToDisableBeginByMakingItVoid<decltype(corradeDeclval<T>().begin())>::Type);
+    CORRADE_HAS_TYPE(HasMemberEnd, decltype(corradeDeclval<T>().end()));
+    CORRADE_HAS_TYPE(HasBegin, decltype(begin(corradeDeclval<T>())));
+    CORRADE_HAS_TYPE(HasEnd, decltype(end(corradeDeclval<T>())));
     /* std::string has c_str() and substr(), std::string_view has substr() and
        std::filesystem::path has c_str(), so we need both to cover all */
-    CORRADE_HAS_TYPE(HasMemberCStr, decltype(std::declval<T>().c_str()));
-    CORRADE_HAS_TYPE(HasMemberSubstr, decltype(std::declval<T>().substr()));
+    CORRADE_HAS_TYPE(HasMemberCStr, decltype(corradeDeclval<T>().c_str()));
+    CORRADE_HAS_TYPE(HasMemberSubstr, decltype(corradeDeclval<T>().substr()));
 }
 
 /**
@@ -239,7 +259,7 @@ should be printed as a container of its contents or as a whole.
 */
 /* When using {}, MSVC 2015 complains that even the explicitly defaulted
    constructor doesn't exist */
-template<class T> using IsIterable = std::integral_constant<bool,
+template<class T> using IsIterable = Implementation::IntegralConstant<bool,
     #ifndef DOXYGEN_GENERATING_OUTPUT
     (Implementation::HasMemberBegin<T>::value || Implementation::HasBegin<T>::value) &&
     (Implementation::HasMemberEnd<T>::value || Implementation::HasEnd<T>::value)
@@ -264,9 +284,9 @@ Used together with @ref IsIterable by @ref Debug to decide whether given type
 should be printed as a container of its contents or as a whole.
 @todoc use the ellipsis macro once m.css has it
 */
-template<class T> using IsStringLike = std::integral_constant<bool,
+template<class T> using IsStringLike = Implementation::IntegralConstant<bool,
     #ifndef DOXYGEN_GENERATING_OUTPUT
-    Implementation::HasMemberCStr<T>::value || Implementation::HasMemberSubstr<T>::value || std::is_same<typename std::decay<T>::type, Containers::StringView>::value || std::is_same<typename std::decay<T>::type, Containers::MutableStringView>::value || std::is_same<typename std::decay<T>::type, Containers::String>::value
+    Implementation::HasMemberCStr<T>::value || Implementation::HasMemberSubstr<T>::value || Implementation::IsSame<typename Implementation::RemoveCR<T>::type, Containers::StringView>::value || Implementation::IsSame<typename Implementation::RemoveCR<T>::type, Containers::MutableStringView>::value || Implementation::IsSame<typename Implementation::RemoveCR<T>::type, Containers::String>::value
     #else
     implementation-specific
     #endif
