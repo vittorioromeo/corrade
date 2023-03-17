@@ -32,6 +32,7 @@
 
 #include <cstdint>
 #include <initializer_list>
+#include <utility>
 
 #include "Corrade/Containers/Pointer.h"
 #include "Corrade/TestSuite/Comparator.h"

@@ -19,7 +19,7 @@
     Generated from Corrade {{revision}}, {{stats:loc}} / {{stats:preprocessed}} LoC
 */
 
-#include "Corrade/Utility/StlUnderlyingType.h"
+#include "Corrade/Utility/UnderlyingType.h"
 #include "base.h"
 // {{includes}}
 

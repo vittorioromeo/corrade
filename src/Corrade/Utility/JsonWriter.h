@@ -33,6 +33,7 @@
 
 #include <cstdint>
 #include <initializer_list>
+#include <type_traits>
 
 #include "Corrade/Containers/Pointer.h"
 #include "Corrade/Containers/EnumSet.h"

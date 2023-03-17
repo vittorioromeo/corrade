@@ -35,7 +35,7 @@
 
 #include "Corrade/Tags.h"
 #include "Corrade/Containers/Containers.h"
-#include "Corrade/Utility/StlUnderlyingType.h"
+#include "Corrade/Utility/UnderlyingType.h"
 #include "Corrade/Utility/visibility.h"
 
 #ifdef CORRADE_BUILD_DEPRECATED

@@ -34,7 +34,7 @@
 
 #include "Corrade/Containers/EnumSet.h"
 #include "Corrade/Utility/Debug.h"
-#include "Corrade/Utility/StlUnderlyingType.h"
+#include "Corrade/Utility/UnderlyingType.h"
 
 namespace Corrade { namespace Containers {
 

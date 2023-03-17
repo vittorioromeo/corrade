@@ -1,5 +1,5 @@
-#ifndef Corrade_Utility_StlUnderlyingType_h
-#define Corrade_Utility_StlUnderlyingType_h
+#ifndef Corrade_Utility_IsArray_h
+#define Corrade_Utility_IsArray_h
 /*
     This file is part of Corrade.
 
@@ -30,41 +30,10 @@
 TODO
 */
 
-#include "Corrade/configure.h"
-
-#if (defined(CORRADE_TARGET_GCC) || defined(CORRADE_TARGET_CLANG))
 namespace Corrade {
-
-template <typename T>
-inline constexpr bool isEnum() { return __is_enum(T); }
-
-namespace Implementation {
-    template<typename T, bool = isEnum<T>()>
-    struct UnderlyingTypeImpl
-    {
-        typedef __underlying_type(T) type;
-    };
-
-    template<typename T>
-    struct UnderlyingTypeImpl<T, false>
-    { };
+    template<class>                               struct IsArray          { enum { value = false }; };
+    template<class T, decltype(sizeof(int)) Size> struct IsArray<T[Size]> { enum { value = true }; };
+    template<class T>                             struct IsArray<T[]>     { enum { value = true }; };
 }
-
-template <typename T>
-using UnderlyingType = typename Implementation::UnderlyingTypeImpl<T>::type;
-
-}
-#else
-/* Including the full definition otherwise */
-#include <type_traits>
-
-namespace Corrade {
-    template <typename T>
-    using UnderlyingType = typename std::underlying_type<T>::type;
-
-    template <typename T>
-    inline constexpr bool isEnum() { return std::is_enum<T>::value; }
-}
-#endif
 
 #endif

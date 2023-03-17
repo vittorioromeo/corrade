@@ -34,6 +34,8 @@
 
 #include "Corrade/Corrade.h"
 #include "Corrade/Utility/Macros.h"
+#include "Corrade/Utility/EnableIf.h"
+#include "Corrade/Utility/DeclVal.h"
 #ifndef CORRADE_NO_DEBUG
 #include "Corrade/Utility/Utility.h"
 #include "Corrade/Utility/visibility.h"
@@ -51,13 +53,6 @@ extern "C" {
 #endif
 
 namespace Corrade {
-
-namespace Implementation {
-    template <typename T> T&& declval();
-
-    template <bool> struct EnableIf       { };
-    template <>     struct EnableIf<true> { typedef void type; };
-}
 
 /**
 @brief Compile-time and runtime CPU instruction set detection and dispatch
@@ -1135,11 +1130,11 @@ template<unsigned int value> struct Tags {
 
     /* Conversion from other tag combination, allowed only if the other is
        not a subset */
-    template<unsigned int otherValue> constexpr Tags(Tags<otherValue>, typename Corrade::Implementation::EnableIf<IsTagConversionAllowed<value, otherValue>::Value>::type* = {}) {}
+    template<unsigned int otherValue> constexpr Tags(Tags<otherValue>, Corrade::EnableIf<IsTagConversionAllowed<value, otherValue>::Value>* = {}) {}
 
     /* Conversion from a single tag, allowed only if we're a single bit and
        the other is not a subset */
-    template<class T> constexpr Tags(T, typename Corrade::Implementation::EnableIf<IsSingleTagConversionAllowed<Value, TypeTraits<T>::Index>::Value>::type* = {}) {}
+    template<class T> constexpr Tags(T, Corrade::EnableIf<IsSingleTagConversionAllowed<Value, TypeTraits<T>::Index>::Value>* = {}) {}
 
     /* A subset of operators on Features, excluding the assignment ones --
        since they modify the type, they make no sense here */
@@ -2132,7 +2127,7 @@ example and overhead comparison.
 #define CORRADE_CPU_DISPATCHED_IFUNC(dispatcher, ...)                       \
     _Pragma("GCC diagnostic push")                                          \
     _Pragma("GCC diagnostic ignored \"-Wmissing-prototypes\"")              \
-    extern "C" decltype(dispatcher(Corrade::Implementation::declval<Corrade::Cpu::Features>())) dispatcher() { \
+    extern "C" decltype(dispatcher(Corrade::declVal<Corrade::Cpu::Features>())) dispatcher() { \
         return dispatcher(Corrade::Cpu::runtimeFeatures());                 \
     }                                                                       \
     __VA_ARGS__ __attribute__((ifunc(#dispatcher)));                        \
@@ -2141,7 +2136,7 @@ example and overhead comparison.
 #define CORRADE_CPU_DISPATCHED_IFUNC(dispatcher, ...)                       \
     _Pragma("GCC diagnostic push")                                          \
     _Pragma("GCC diagnostic ignored \"-Wmissing-prototypes\"")              \
-    extern "C" decltype(dispatcher(Corrade::Implementation::declval<Corrade::Cpu::Features>())) dispatcher(unsigned long caps) { \
+    extern "C" decltype(dispatcher(Corrade::declVal<Corrade::Cpu::Features>())) dispatcher(unsigned long caps) { \
         return dispatcher(Corrade::Cpu::Implementation::runtimeFeatures(caps)); \
     }                                                                       \
     __VA_ARGS__ __attribute__((ifunc(#dispatcher)));                        \
@@ -2157,13 +2152,13 @@ example and overhead comparison.
    ifunc dispatcher is named differently. */
 #ifndef CORRADE_TARGET_ARM
 #define CORRADE_CPU_DISPATCHED_IFUNC(dispatcher, ...)                       \
-    extern "C" { CORRADE_NEVER_INLINE static decltype(dispatcher(Corrade::Implementation::declval<Corrade::Cpu::Features>())) dispatcher ## Ifunc() {   \
+    extern "C" { CORRADE_NEVER_INLINE static decltype(dispatcher(Corrade::declVal<Corrade::Cpu::Features>())) dispatcher ## Ifunc() {   \
         return dispatcher(Corrade::Cpu::runtimeFeatures());                 \
     }}                                                                      \
     __VA_ARGS__ __attribute__((ifunc(#dispatcher "Ifunc")));
 #else
 #define CORRADE_CPU_DISPATCHED_IFUNC(dispatcher, ...)                       \
-    extern "C" { CORRADE_NEVER_INLINE static decltype(dispatcher(Corrade::Implementation::declval<Corrade::Cpu::Features>())) dispatcher ## Ifunc(unsigned long caps) { \
+    extern "C" { CORRADE_NEVER_INLINE static decltype(dispatcher(Corrade::declVal<Corrade::Cpu::Features>())) dispatcher ## Ifunc(unsigned long caps) { \
         return dispatcher(Corrade::Cpu::Implementation::runtimeFeatures(caps)); \
     }}                                                                      \
     __VA_ARGS__ __attribute__((ifunc(#dispatcher "Ifunc")));
@@ -2172,13 +2167,13 @@ example and overhead comparison.
 /* Only GCC 4.9+ has the implementation in the most minimal form. */
 #ifndef CORRADE_TARGET_ARM
 #define CORRADE_CPU_DISPATCHED_IFUNC(dispatcher, ...)                       \
-    extern "C" { static decltype(dispatcher(Corrade::Implementation::declval<Corrade::Cpu::Features>())) dispatcher() { \
+    extern "C" { static decltype(dispatcher(Corrade::declVal<Corrade::Cpu::Features>())) dispatcher() { \
         return dispatcher(Corrade::Cpu::runtimeFeatures());                 \
     }}                                                                      \
     __VA_ARGS__ __attribute__((ifunc(#dispatcher)));
 #else
 #define CORRADE_CPU_DISPATCHED_IFUNC(dispatcher, ...)                       \
-    extern "C" { static decltype(dispatcher(Corrade::Implementation::declval<Corrade::Cpu::Features>())) dispatcher(unsigned long caps) { \
+    extern "C" { static decltype(dispatcher(Corrade::declVal<Corrade::Cpu::Features>())) dispatcher(unsigned long caps) { \
         return dispatcher(Corrade::Cpu::Implementation::runtimeFeatures(caps)); \
     }}                                                                      \
     __VA_ARGS__ __attribute__((ifunc(#dispatcher)));

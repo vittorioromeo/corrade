@@ -34,15 +34,10 @@
 
 #include "Corrade/Tags.h"
 #include "Corrade/Containers/Containers.h" /* for template default args */
-#include "Corrade/Utility/StlUnderlyingType.h"
+#include "Corrade/Utility/UnderlyingType.h"
+#include "Corrade/Utility/EnableIf.h"
 
 namespace Corrade { namespace Containers {
-
-namespace Implementation {
-    template <bool> struct EnableIf       { };
-    template <>     struct EnableIf<true> { typedef void type; };
-}
-
 
 /**
 @brief Set of enum values
@@ -223,7 +218,7 @@ class EnumSet {
 Works only with @ref EnumSet, not with @ref BigEnumSet.
 @see @ref std::underlying_type
 */
-template<class T, class = typename Implementation::EnableIf<isEnum<T>()>::type> constexpr UnderlyingType<T> enumCastUnderlyingType(T value) {
+template<class T, class = EnableIf<isEnum<T>()>> constexpr UnderlyingType<T> enumCastUnderlyingType(T value) {
     return UnderlyingType<T>(value);
 }
 

@@ -31,11 +31,14 @@
  * @see @ref Corrade/Containers/PointerStl.h
  */
 
-#include <type_traits>
-
 #include "Corrade/Tags.h"
 #include "Corrade/Utility/DebugAssert.h"
 #include "Corrade/Utility/Move.h"
+#include "Corrade/Utility/EnableIf.h"
+#include "Corrade/Utility/DeclVal.h"
+#include "Corrade/Utility/IsArray.h"
+#include "Corrade/Utility/IsBaseOf.h"
+#include "Corrade/Utility/IsConstructible.h"
 #ifndef CORRADE_NO_DEBUG
 #include "Corrade/Utility/Debug.h"
 #endif
@@ -114,7 +117,7 @@ Example:
     @ref Reference
 */
 template<class T> class Pointer {
-    static_assert(!std::is_array<T>::value, "use Containers::Array for arrays instead");
+    static_assert(!IsArray<T>::value, "use Containers::Array for arrays instead");
 
     public:
         /**
@@ -159,14 +162,14 @@ template<class T> class Pointer {
          * Expects that @p T is a base of @p U. For downcasting (base to
          * derived) use @ref pointerCast(). Calls @ref release() on @p other.
          */
-        template<class U, class = typename std::enable_if<std::is_base_of<T, U>::value>::type> /*implicit*/ Pointer(Pointer<U>&& other) noexcept: _pointer{other.release()} {}
+        template<class U, class = EnableIf<IsBaseOf<T, U>::value>> /*implicit*/ Pointer(Pointer<U>&& other) noexcept: _pointer{other.release()} {}
 
         /**
          * @brief Construct a unique pointer from external representation
          *
          * @see @ref Containers-Pointer-stl, @ref pointer(T&&)
          */
-        template<class U, class = decltype(Implementation::PointerConverter<T, U>::from(std::declval<U&&>()))> /*implicit*/ Pointer(U&& other) noexcept: Pointer{Implementation::PointerConverter<T, U>::from(Utility::move(other))} {}
+        template<class U, class = decltype(Implementation::PointerConverter<T, U>::from(declVal<U&&>()))> /*implicit*/ Pointer(U&& other) noexcept: Pointer{Implementation::PointerConverter<T, U>::from(Utility::move(other))} {}
 
         /** @brief Copying is not allowed */
         Pointer(const Pointer<T>&) = delete;
@@ -181,7 +184,10 @@ template<class T> class Pointer {
 
         /** @brief Move assignment */
         Pointer<T>& operator=(Pointer<T>&& other) noexcept {
-            std::swap(_pointer, other._pointer);
+            T* temp = _pointer;
+            _pointer = other._pointer;
+            other._pointer = temp;
+
             return *this;
         }
 
@@ -190,7 +196,7 @@ template<class T> class Pointer {
          *
          * @see @ref Containers-Pointer-stl
          */
-        template<class U, class = decltype(Implementation::PointerConverter<T, U>::to(std::declval<Pointer<T>&&>()))> /*implicit*/ operator U() && {
+        template<class U, class = decltype(Implementation::PointerConverter<T, U>::to(declVal<Pointer<T>&&>()))> /*implicit*/ operator U() && {
             return Implementation::PointerConverter<T, U>::to(Utility::move(*this));
         }
 
@@ -365,7 +371,7 @@ lines are equivalent:
 @see @ref pointer(Args&&... args), @ref optional(T&&)
 */
 template<class T> inline Pointer<T> pointer(T* pointer) {
-    static_assert(!std::is_constructible<T, T*>::value, "the type is constructible from its own pointer, which is ambiguous -- explicitly use the constructor instead");
+    static_assert(!IsConstructible<T, T*>::value, "the type is constructible from its own pointer, which is ambiguous -- explicitly use the constructor instead");
     return Pointer<T>{pointer};
 }
 
@@ -401,8 +407,8 @@ template<class U, class T> Pointer<U> pointerCast(Pointer<T>&& pointer) {
 }
 
 namespace Implementation {
-    template<class T, class ...Args> struct IsFirstAPointer: std::false_type {};
-    template<class T> struct IsFirstAPointer<T, T*>: std::true_type {};
+    template<class T, class ...Args> struct IsFirstAPointer { enum { value = false }; };
+    template<class T> struct IsFirstAPointer<T, T*> { enum { value = true }; };
 }
 
 /** @relatesalso Pointer
@@ -423,7 +429,7 @@ equivalent:
 @see @ref pointer(T*), @ref optional(Args&&... args)
 */
 template<class T, class ...Args> inline Pointer<T> pointer(Args&&... args) {
-    static_assert(!Implementation::IsFirstAPointer<T, Args...>::value || !std::is_constructible<T, T*>::value, "attempt to construct a type from its own pointer, which is ambiguous --  explicitly use the constructor instead");
+    static_assert(!Implementation::IsFirstAPointer<T, Args...>::value || !IsConstructible<T, T*>::value, "attempt to construct a type from its own pointer, which is ambiguous --  explicitly use the constructor instead");
     return Pointer<T>{Corrade::InPlaceInit, Utility::forward<Args>(args)...};
 }
 

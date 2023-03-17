@@ -74,6 +74,29 @@ template<std::size_t ...> struct Sequence {};
 
    Further optimization could be done by using Clang's __make_integer_seq from
    https://reviews.llvm.org/D14814, however I think this is good enough now. */
+
+
+#if __has_builtin(__make_integer_seq)
+
+template<class, std::size_t... X> struct SequenceHelper
+{
+    using type = Sequence<X...>;
+};
+
+template<std::size_t N> struct GenerateSequence
+{
+    using Type = typename __make_integer_seq<SequenceHelper, std::size_t, N>::type;
+};
+
+#elif __has_builtin(__integer_pack)
+
+template<std::size_t N> struct GenerateSequence
+{
+    using Type = Sequence<__integer_pack(N)...>;
+};
+
+#else
+
 template<class A, class B> struct SequenceConcat;
 template<std::size_t ...first, std::size_t ...second> struct SequenceConcat<Sequence<first...>, Sequence<second...>> {
     typedef Sequence<first..., (sizeof...(first) + second)...> Type;
@@ -84,6 +107,10 @@ template<std::size_t N> struct GenerateSequence:
                    typename GenerateSequence<N - N/2>::Type> {};
 template<> struct GenerateSequence<1> { typedef Sequence<0> Type; };
 template<> struct GenerateSequence<0> { typedef Sequence<> Type; };
+
+#endif
+
+
 #endif
 
 }}}

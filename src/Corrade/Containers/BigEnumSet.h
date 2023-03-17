@@ -38,7 +38,7 @@
 #include "Corrade/Containers/EnumSet.h" /* reusing the macros */
 #include "Corrade/Containers/sequenceHelpers.h"
 #include "Corrade/Utility/DebugAssert.h"
-#include "Corrade/Utility/StlUnderlyingType.h"
+#include "Corrade/Utility/UnderlyingType.h"
 
 namespace Corrade { namespace Containers {
 

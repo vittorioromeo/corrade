@@ -31,6 +31,9 @@
  */
 
 #include "Corrade/configure.h"
+#include "Corrade/Utility/DeclVal.h"
+#include "Corrade/Utility/UnCVRef.h"
+#include "Corrade/Utility/IsSame.h"
 
 namespace Corrade { namespace Utility {
 
@@ -187,22 +190,10 @@ template<class U> class className {                                         \
     template<class T> static char get(T&&, __VA_ARGS__* = nullptr);         \
     static short get(...);                                                  \
     public:                                                                 \
-        enum: bool { value = sizeof(get(Corrade::Utility::Implementation::corradeDeclval<U>())) == sizeof(char) }; \
+        enum: bool { value = sizeof(get(Corrade::declVal<U>())) == sizeof(char) }; \
 }
 
 namespace Implementation {
-    template <typename T> T&& corradeDeclval();
-
-    template <typename T> struct RemoveCR            { using type = T; };
-    template <typename T> struct RemoveCR<T&>        { using type = T; };
-    template <typename T> struct RemoveCR<T&&>       { using type = T; };
-    template <typename T> struct RemoveCR<const T&>  { using type = T; };
-    template <typename T> struct RemoveCR<const T&&> { using type = T; };
-    template <typename T> struct RemoveCR<const T>   { using type = T; };
-
-    template <typename T, typename U> struct IsSame { enum { value = false }; };
-    template <typename T> struct IsSame<T, T>       { enum { value = true }; };
-
     template<typename T, T Value>
     struct IntegralConstant
     {
@@ -235,14 +226,16 @@ namespace Implementation {
     };
     template<> struct FineUnlessEigenDevsAttemptedToDisableBeginByMakingItVoid<void> {};
 
-    CORRADE_HAS_TYPE(HasMemberBegin, typename FineUnlessEigenDevsAttemptedToDisableBeginByMakingItVoid<decltype(corradeDeclval<T>().begin())>::Type);
-    CORRADE_HAS_TYPE(HasMemberEnd, decltype(corradeDeclval<T>().end()));
-    CORRADE_HAS_TYPE(HasBegin, decltype(begin(corradeDeclval<T>())));
-    CORRADE_HAS_TYPE(HasEnd, decltype(end(corradeDeclval<T>())));
+    CORRADE_HAS_TYPE(HasMemberBegin, typename FineUnlessEigenDevsAttemptedToDisableBeginByMakingItVoid<decltype(declVal<T>().begin())>::Type);
+    CORRADE_HAS_TYPE(HasMemberEnd, decltype(declVal<T>().end()));
+    CORRADE_HAS_TYPE(HasBegin, decltype(begin(declVal<T>())));
+    CORRADE_HAS_TYPE(HasEnd, decltype(end(declVal<T>())));
     /* std::string has c_str() and substr(), std::string_view has substr() and
        std::filesystem::path has c_str(), so we need both to cover all */
-    CORRADE_HAS_TYPE(HasMemberCStr, decltype(corradeDeclval<T>().c_str()));
-    CORRADE_HAS_TYPE(HasMemberSubstr, decltype(corradeDeclval<T>().substr()));
+    CORRADE_HAS_TYPE(HasMemberCStr, decltype(declVal<T>().c_str()));
+    CORRADE_HAS_TYPE(HasMemberSubstr, decltype(declVal<T>().substr()));
+    CORRADE_HAS_TYPE(HasFirst, decltype(declVal<T>().first));
+    CORRADE_HAS_TYPE(HasSecond, decltype(declVal<T>().second));
 }
 
 /**
@@ -286,12 +279,25 @@ should be printed as a container of its contents or as a whole.
 */
 template<class T> using IsStringLike = Implementation::IntegralConstant<bool,
     #ifndef DOXYGEN_GENERATING_OUTPUT
-    Implementation::HasMemberCStr<T>::value || Implementation::HasMemberSubstr<T>::value || Implementation::IsSame<typename Implementation::RemoveCR<T>::type, Containers::StringView>::value || Implementation::IsSame<typename Implementation::RemoveCR<T>::type, Containers::MutableStringView>::value || Implementation::IsSame<typename Implementation::RemoveCR<T>::type, Containers::String>::value
+    Implementation::HasMemberCStr<T>::value || Implementation::HasMemberSubstr<T>::value || IsSame<UnCVRef<T>, Containers::StringView>::value || IsSame<UnCVRef<T>, Containers::MutableStringView>::value || IsSame<UnCVRef<T>, Containers::String>::value
     #else
     implementation-specific
     #endif
     >;
 
-}}
+/**
+TODO
+*/
+template<class T> using IsPairLike = Implementation::IntegralConstant<bool,
+    #ifndef DOXYGEN_GENERATING_OUTPUT
+    Implementation::HasFirst<T>::value && Implementation::HasSecond<T>::value
+    #else
+    implementation-specific
+    #endif
+    >;
+
+
+}
+}
 
 #endif

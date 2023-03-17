@@ -40,8 +40,14 @@
 #include "Corrade/Containers/EnumSet.h"
 #include "Corrade/Utility/DebugAssert.h"
 #include "Corrade/Utility/Move.h"
+#include "Corrade/Utility/TypeTraits.h"
 #include "Corrade/Utility/Utility.h"
 #include "Corrade/Utility/visibility.h"
+#include "Corrade/Utility/EnableIf.h"
+#include "Corrade/Utility/UnCVRef.h"
+#include "Corrade/Utility/IsArray.h"
+#include "Corrade/Utility/IsSame.h"
+#include "Corrade/Utility/IsConst.h"
 
 #ifdef CORRADE_BUILD_DEPRECATED
 /* For join(), which used to take an ArrayView<StringView> */
@@ -367,7 +373,7 @@ BasicStringView {
          * null-terminated view with @ref String::nullTerminatedView() or
          * @ref String::nullTerminatedGlobalView().
          */
-        template<class U = T, class = typename std::enable_if<std::is_const<U>::value>::type> /*implicit*/ BasicStringView(const String& data) noexcept;
+        template<class U = T, class = EnableIf<IsConst<U>::value>> /*implicit*/ BasicStringView(const String& data) noexcept;
 
         /**
          * @brief Construct from an @ref ArrayView
@@ -396,11 +402,11 @@ BasicStringView {
            because it'd get preferred over the implicit copy constructor. */
         /** @todo even though the implicit copy constructor would be overriden
             without the is_same part, is_trivially_copyable still says yes?! */
-        template<class U, class = typename std::enable_if<!std::is_array<typename std::remove_reference<U&&>::type>::value && !std::is_same<typename std::decay<U&&>::type, BasicStringView<T>>::value, decltype(ArrayView<T>{std::declval<U&&>()})>::type> constexpr /*implicit*/ BasicStringView(U&& data, StringViewFlags flags = {}) noexcept: BasicStringView{flags, ArrayView<T>(data)} {}
+        template<class U, class = EnableIf<!IsArray<UnCVRef<U&&>>::value && !IsSame<UnCVRef<U&&>, BasicStringView<T>>::value, decltype(ArrayView<T>{declVal<U&&>()})>> constexpr /*implicit*/ BasicStringView(U&& data, StringViewFlags flags = {}) noexcept: BasicStringView{flags, ArrayView<T>(data)} {}
         #endif
 
         /** @brief Construct a @ref StringView from a @ref MutableStringView */
-        template<class U, class = typename std::enable_if<std::is_same<const U, T>::value>::type> constexpr /*implicit*/ BasicStringView(BasicStringView<U> mutable_) noexcept: _data{mutable_._data}, _sizePlusFlags{mutable_._sizePlusFlags} {}
+        template<class U, class = EnableIf<IsSame<const U, T>::value>> constexpr /*implicit*/ BasicStringView(BasicStringView<U> mutable_) noexcept: _data{mutable_._data}, _sizePlusFlags{mutable_._sizePlusFlags} {}
 
         /**
          * @brief Construct from a null-terminated C string
@@ -431,7 +437,7 @@ BasicStringView {
            returns a std::vector. Besides that, to simplify the implementation,
            there's no const-adding conversion. Instead, the implementer is
            supposed to add an ArrayViewConverter variant for that. */
-        template<class U, class = decltype(Implementation::StringViewConverter<T, typename std::decay<U&&>::type>::from(std::declval<U&&>()))> constexpr /*implicit*/ BasicStringView(U&& other) noexcept: BasicStringView{Implementation::StringViewConverter<T, typename std::decay<U&&>::type>::from(Utility::forward<U>(other))} {}
+        template<class U, class = decltype(Implementation::StringViewConverter<T, UnCVRef<U&&>>::from(declVal<U&&>()))> constexpr /*implicit*/ BasicStringView(U&& other) noexcept: BasicStringView{Implementation::StringViewConverter<T, UnCVRef<U&&>>::from(Utility::forward<U>(other))} {}
 
         /**
          * @brief Convert the view to external representation
@@ -441,7 +447,7 @@ BasicStringView {
         /* To simplify the implementation, there's no const-adding conversion.
            Instead, the implementer is supposed to add an StringViewConverter
            variant for that. */
-        template<class U, class = decltype(Implementation::StringViewConverter<T, U>::to(std::declval<BasicStringView<T>>()))> constexpr /*implicit*/ operator U() const {
+        template<class U, class = decltype(Implementation::StringViewConverter<T, U>::to(declVal<BasicStringView<T>>()))> constexpr /*implicit*/ operator U() const {
             return Implementation::StringViewConverter<T, U>::to(*this);
         }
 
@@ -802,7 +808,7 @@ BasicStringView {
          */
         BasicStringView<T> exceptPrefix(char prefix) const = delete;
         #else
-        template<class = typename std::enable_if<std::is_same<typename std::decay<T>::type, char>::value>::type> BasicStringView<T> exceptPrefix(T&& prefix) const = delete;
+        template<class = EnableIf<IsSame<UnCVRef<T>, char>::value>> BasicStringView<T> exceptPrefix(T&& prefix) const = delete;
         #endif
 
         #ifdef CORRADE_BUILD_DEPRECATED
@@ -840,7 +846,7 @@ BasicStringView {
          */
         BasicStringView<T> exceptSuffix(char suffix) const = delete;
         #else
-        template<class = typename std::enable_if<std::is_same<typename std::decay<T>::type, char>::value>::type> BasicStringView<T> exceptSuffix(T&& suffix) const = delete;
+        template<class = EnableIf<IsSame<UnCVRef<T>, char>::value>> BasicStringView<T> exceptSuffix(T&& suffix) const = delete;
         #endif
 
         #ifdef CORRADE_BUILD_DEPRECATED
@@ -1173,7 +1179,7 @@ BasicStringView {
            for details; arguments in a flipped order to avoid accidental
            ambiguity. The ArrayView type is a template to avoid having to
            include ArrayView.h. */
-        template<class U, class = typename std::enable_if<std::is_same<T, U>::value>::type> constexpr explicit BasicStringView(StringViewFlags flags, ArrayView<U> data) noexcept: BasicStringView{data.data(), data.size(), flags} {}
+        template<class U, class = EnableIf<IsSame<T, U>::value>> constexpr explicit BasicStringView(StringViewFlags flags, ArrayView<U> data) noexcept: BasicStringView{data.data(), data.size(), flags} {}
 
         /* Used by the char* constructor, delinlined because it calls into
            std::strlen() */

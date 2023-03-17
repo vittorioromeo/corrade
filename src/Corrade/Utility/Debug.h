@@ -32,12 +32,11 @@
  */
 
 #include <iosfwd>
-// #include <utility> /** @todo consider putting this away as well (900 LOC) */
-#include <bits/stl_pair.h>
 
 #include "Corrade/Containers/EnumSet.h"
 #include "Corrade/Utility/TypeTraits.h"
 #include "Corrade/Utility/Utility.h"
+#include "Corrade/Utility/EnableIf.h"
 #include "Corrade/Utility/visibility.h"
 
 namespace Corrade { namespace Utility {
@@ -878,7 +877,7 @@ template<class Iterable> Debug& operator<<(Debug& debug, const Iterable& value)
 #else
 /* libc++ from Apple's Clang "4.2" (3.2-svn) doesn't have constexpr operator
    bool for std::integral_constant, thus we need to use ::value instead */
-template<class Iterable> Debug& operator<<(typename std::enable_if<IsIterable<Iterable>::value && !IsStringLike<Iterable>::value, Debug&>::type debug, const Iterable& value)
+template<class Iterable> Debug& operator<<(EnableIf<IsIterable<Iterable>::value && !IsStringLike<Iterable>::value, Debug&> debug, const Iterable& value)
 #endif
 {
     /* True if the values themselves are also containers. A string is
@@ -923,7 +922,7 @@ Prints the value as @cb{.shell-session} (first, second) @ce. Unlike
 @ref operator<<(Debug& debug, const Iterable& value), the output is not
 affected by @ref Debug::Flag::Packed / @ref Debug::packed.
 */
-template<class T, class U> Debug& operator<<(Debug& debug, const std::pair<T, U>& value) {
+template<class T, class = EnableIf<IsPairLike<T>::value, void>> Debug& operator<<(Debug& debug, const T& value) {
     /* Nested values should get printed with the same flags, so make all
        immediate flags temporarily global -- except NoSpace, unless it's also
        set globally */

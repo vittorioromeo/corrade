@@ -33,7 +33,7 @@
 #include <cstddef>
 
 #include "Corrade/configure.h"
-#include "Corrade/Utility/StlUnderlyingType.h"
+#include "Corrade/Utility/UnderlyingType.h"
 
 namespace Corrade { namespace Containers {
 
