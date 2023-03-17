@@ -30,10 +30,10 @@
  * @brief Forward declarations for the @ref Corrade::Containers namespace
  */
 
-#include <type_traits>
 #include <cstddef>
 
 #include "Corrade/configure.h"
+#include "Corrade/Utility/StlUnderlyingType.h"
 
 namespace Corrade { namespace Containers {
 
@@ -90,7 +90,7 @@ typedef MutableStridedBitArrayView<2> MutableStridedBitArrayView2D;
 typedef MutableStridedBitArrayView<3> MutableStridedBitArrayView3D;
 typedef MutableStridedBitArrayView<4> MutableStridedBitArrayView4D;
 
-template<class T, typename std::underlying_type<T>::type fullValue = typename std::underlying_type<T>::type(~0)> class EnumSet;
+template<class T, UnderlyingType<T> fullValue = UnderlyingType<T>(~0)> class EnumSet;
 
 template<class> class Iterable;
 template<class> class IterableIterator;

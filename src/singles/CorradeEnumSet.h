@@ -19,9 +19,9 @@
     Generated from Corrade {{revision}}, {{stats:loc}} / {{stats:preprocessed}} LoC
 */
 
+#include "Corrade/Utility/StlUnderlyingType.h"
 #include "base.h"
 // {{includes}}
-#include <type_traits>
 
 /* We don't need anything from configure.h here */
 #pragma ACME enable Corrade_configure_h
@@ -34,7 +34,7 @@
 #define CorradeEnumSet_h
 namespace Corrade { namespace Containers {
 
-template<class T, typename std::underlying_type<T>::type fullValue = typename std::underlying_type<T>::type(~0)> class EnumSet;
+template<class T, UnderlyingType<T> fullValue = UnderlyingType<T>(~0)> class EnumSet;
 
 }}
 #endif

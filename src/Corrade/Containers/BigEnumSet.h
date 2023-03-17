@@ -38,12 +38,13 @@
 #include "Corrade/Containers/EnumSet.h" /* reusing the macros */
 #include "Corrade/Containers/sequenceHelpers.h"
 #include "Corrade/Utility/DebugAssert.h"
+#include "Corrade/Utility/StlUnderlyingType.h"
 
 namespace Corrade { namespace Containers {
 
 namespace Implementation {
     template<class T> constexpr std::uint64_t bigEnumSetElementValue(std::size_t i, T value) {
-        return static_cast<typename std::underlying_type<T>::type>(value)/64 == i ? (1ull << (static_cast<typename std::underlying_type<T>::type>(value) % 64)) : 0;
+        return static_cast<UnderlyingType<T>>(value)/64 == i ? (1ull << (static_cast<UnderlyingType<T>>(value) % 64)) : 0;
     }
 }
 
@@ -111,8 +112,8 @@ class BigEnumSet {
 
         /** @brief Create a set from one value */
         constexpr /*implicit*/ BigEnumSet(T value) noexcept: BigEnumSet<T, size>{
-            (CORRADE_CONSTEXPR_DEBUG_ASSERT(static_cast<typename std::underlying_type<T>::type>(value) < size*64,
-                "Containers::BigEnumSet: value" << static_cast<typename std::underlying_type<T>::type>(value) << "too large for a" << size*64 << Utility::Debug::nospace << "-bit storage"
+            (CORRADE_CONSTEXPR_DEBUG_ASSERT(static_cast<UnderlyingType<T>>(value) < size*64,
+                "Containers::BigEnumSet: value" << static_cast<UnderlyingType<T>>(value) << "too large for a" << size*64 << Utility::Debug::nospace << "-bit storage"
             ), nullptr),
             value, typename Implementation::GenerateSequence<Size>::Type{}} {}
 

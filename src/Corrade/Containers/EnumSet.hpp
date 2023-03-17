@@ -34,6 +34,7 @@
 
 #include "Corrade/Containers/EnumSet.h"
 #include "Corrade/Utility/Debug.h"
+#include "Corrade/Utility/StlUnderlyingType.h"
 
 namespace Corrade { namespace Containers {
 
@@ -59,7 +60,7 @@ The usage would then be straightforward:
 
 @see @ref bigEnumSetDebugOutput()
 */
-template<class T, typename std::underlying_type<T>::type fullValue> Utility::Debug& enumSetDebugOutput(Utility::Debug& debug, EnumSet<T, fullValue> value, const char* empty, std::initializer_list<T> enums) {
+template<class T, UnderlyingType<T> fullValue> Utility::Debug& enumSetDebugOutput(Utility::Debug& debug, EnumSet<T, fullValue> value, const char* empty, std::initializer_list<T> enums) {
     /* Print the empty value in case there is nothing */
     if(!value) return debug << empty;
 
@@ -77,14 +78,14 @@ template<class T, typename std::underlying_type<T>::type fullValue> Utility::Deb
         debug << e;
 
         /* Avoid stripping out the unknown bits by the EnumSet operator~ */
-        value &= T(~typename std::underlying_type<T>::type(e));
+        value &= T(~UnderlyingType<T>(e));
     }
 
     /* If there are leftovers, pass them to the original debug operator and
        expect it will print them as a raw value */
     if(value) {
         if(separate) debug << Utility::Debug::nospace << "|" << Utility::Debug::nospace;
-        debug << T(typename std::underlying_type<T>::type(value));
+        debug << T(UnderlyingType<T>(value));
     }
 
     /* Reset the original flags back */

@@ -32,6 +32,7 @@
  */
 
 #include <initializer_list>
+#include <type_traits>
 
 #include "Corrade/Containers/Containers.h"
 #include "Corrade/Containers/EnumSet.h"

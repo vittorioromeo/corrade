@@ -31,12 +31,18 @@
  * @see @ref Corrade/Containers/EnumSet.hpp
  */
 
-#include <type_traits>
 
 #include "Corrade/Tags.h"
 #include "Corrade/Containers/Containers.h" /* for template default args */
+#include "Corrade/Utility/StlUnderlyingType.h"
 
 namespace Corrade { namespace Containers {
+
+namespace Implementation {
+    template <bool> struct EnableIf       { };
+    template <>     struct EnableIf<true> { typedef void type; };
+}
+
 
 /**
 @brief Set of enum values
@@ -89,18 +95,18 @@ definitions. This macro works with templated classes as well.
 @see @ref enumCastUnderlyingType(), @ref enumSetDebugOutput()
 */
 #ifdef DOXYGEN_GENERATING_OUTPUT
-template<class T, typename std::underlying_type<T>::type fullValue = typename std::underlying_type<T>::type(~0)>
+template<class T, UnderlyingType<T> fullValue = UnderlyingType<T>(~0)>
 #else
-template<class T, typename std::underlying_type<T>::type fullValue>
+template<class T, UnderlyingType<T> fullValue>
 #endif
 class EnumSet {
-    static_assert(std::is_enum<T>::value, "EnumSet type must be a strongly typed enum");
+    static_assert(isEnum<T>(), "EnumSet type must be a strongly typed enum");
 
     public:
         typedef T Type; /**< @brief Enum type */
 
         /** @brief Underlying type of the enum */
-        typedef typename std::underlying_type<T>::type UnderlyingType;
+        typedef UnderlyingType<T> UnderlyingType;
 
         enum: UnderlyingType {
             FullValue = fullValue /**< All enum values together */
@@ -217,8 +223,8 @@ class EnumSet {
 Works only with @ref EnumSet, not with @ref BigEnumSet.
 @see @ref std::underlying_type
 */
-template<class T, class = typename std::enable_if<std::is_enum<T>::value>::type> constexpr typename std::underlying_type<T>::type enumCastUnderlyingType(T value) {
-    return typename std::underlying_type<T>::type(value);
+template<class T, class = typename Implementation::EnableIf<isEnum<T>()>::type> constexpr UnderlyingType<T> enumCastUnderlyingType(T value) {
+    return UnderlyingType<T>(value);
 }
 
 /** @relatesalso EnumSet
@@ -228,8 +234,8 @@ template<class T, class = typename std::enable_if<std::is_enum<T>::value>::type>
 Works only with @ref EnumSet, not with @ref BigEnumSet.
 @see @ref std::underlying_type
 */
-template<class T, typename std::underlying_type<T>::type fullValue> constexpr typename std::underlying_type<T>::type enumCastUnderlyingType(EnumSet<T, fullValue> value) {
-    return typename std::underlying_type<T>::type(value);
+template<class T, UnderlyingType<T> fullValue> constexpr UnderlyingType<T> enumCastUnderlyingType(EnumSet<T, fullValue> value) {
+    return UnderlyingType<T>(value);
 }
 
 /** @hideinitializer
