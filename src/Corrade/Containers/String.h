@@ -32,13 +32,17 @@
  */
 
 #include <cstddef>
-#include <type_traits>
 
 #include "Corrade/Containers/Containers.h"
 #include "Corrade/Containers/StringView.h" /* needs to be included for
                                               comparison operators */
 #include "Corrade/Utility/Utility.h"
 #include "Corrade/Utility/visibility.h"
+#include "Corrade/Utility/EnableIf.h"
+#include "Corrade/Utility/IsSame.h"
+#include "Corrade/Utility/UnCVRef.h"
+#include "Corrade/Utility/DeclVal.h"
+#include "Corrade/Utility/IsConvertible.h"
 
 namespace Corrade { namespace Containers {
 
@@ -448,7 +452,7 @@ class CORRADE_UTILITY_EXPORT String {
         #else
         /* Gets ambigous when calling String{ptr, 0}. FFS, zero as null pointer
            was deprecated in C++11 already, why is this still a problem?! */
-        template<class T> String(typename std::enable_if<std::is_convertible<T, Deleter>::value && !std::is_convertible<T, std::size_t>::value, char*>::type data, T deleter) noexcept: String{deleter, nullptr, data} {}
+        template<class T> String(EnableIf<IsConvertible<T, Deleter>::value && !IsConvertible<T, std::size_t>::value, char*> data, T deleter) noexcept: String{deleter, nullptr, data} {}
         #endif
 
         /**
@@ -475,7 +479,7 @@ class CORRADE_UTILITY_EXPORT String {
         #else
         /* Gets ambigous when calling String{ptr, 0}. FFS, zero as null pointer
            was deprecated in C++11 already, why is this still a problem?! */
-        template<class T> String(typename std::enable_if<std::is_convertible<T, Deleter>::value && !std::is_convertible<T, std::size_t>::value, const char*>::type data, T deleter) noexcept: String{deleter, nullptr, const_cast<char*>(data)} {}
+        template<class T> String(EnableIf<IsConvertible<T, Deleter>::value && !IsConvertible<T, std::size_t>::value, const char*> data, T deleter) noexcept: String{deleter, nullptr, const_cast<char*>(data)} {}
         #endif
 
         /**
@@ -498,7 +502,7 @@ class CORRADE_UTILITY_EXPORT String {
         /* Gets ambigous when calling String{nullptr, 0}. FFS, zero as null
            pointer was deprecated in C++11 already, why is this still a
            problem?! */
-        template<class T> String(typename std::enable_if<std::is_convertible<T, Deleter>::value && !std::is_convertible<T, std::size_t>::value, std::nullptr_t>::type, T) noexcept = delete;
+        template<class T> String(EnableIf<IsConvertible<T, Deleter>::value && !IsConvertible<T, std::size_t>::value, std::nullptr_t>, T) noexcept = delete;
         #endif
 
         /**
@@ -548,7 +552,7 @@ class CORRADE_UTILITY_EXPORT String {
            returns a std::vector. Besides that, to simplify the implementation,
            there's no const-adding conversion. Instead, the implementer is
            supposed to add an ArrayViewConverter variant for that. */
-        template<class T, class = decltype(Implementation::StringConverter<typename std::decay<T&&>::type>::from(std::declval<T&&>()))> /*implicit*/ String(T&& other) noexcept: String{Implementation::StringConverter<typename std::decay<T&&>::type>::from(Utility::forward<T>(other))} {}
+        template<class T, class = decltype(Implementation::StringConverter<UnCVRef<T&&>>::from(declVal<T&&>()))> /*implicit*/ String(T&& other) noexcept: String{Implementation::StringConverter<UnCVRef<T&&>>::from(Utility::forward<T>(other))} {}
 
         /**
          * @brief Destructor
@@ -613,7 +617,7 @@ class CORRADE_UTILITY_EXPORT String {
         /* To simplify the implementation, there's no const-adding conversion.
            Instead, the implementer is supposed to add an StringViewConverter
            variant for that. */
-        template<class T, class = decltype(Implementation::StringConverter<T>::to(std::declval<String>()))> /*implicit*/ operator T() const {
+        template<class T, class = decltype(Implementation::StringConverter<T>::to(declVal<String>()))> /*implicit*/ operator T() const {
             return Implementation::StringConverter<T>::to(*this);
         }
 
@@ -961,8 +965,8 @@ class CORRADE_UTILITY_EXPORT String {
         MutableStringView exceptPrefix(char prefix) = delete;
         StringView exceptPrefix(char prefix) const = delete; /**< @overload */
         #else
-        template<class T, class = typename std::enable_if<std::is_same<typename std::decay<T>::type, char>::value>::type> MutableStringView exceptPrefix(T&& prefix) = delete;
-        template<class T, class = typename std::enable_if<std::is_same<typename std::decay<T>::type, char>::value>::type> StringView exceptPrefix(T&& prefix) const = delete;
+        template<class T, class = EnableIf<IsSame<UnCVRef<T>, char>::value>> MutableStringView exceptPrefix(T&& prefix) = delete;
+        template<class T, class = EnableIf<IsSame<UnCVRef<T>, char>::value>> StringView exceptPrefix(T&& prefix) const = delete;
         #endif
 
         #ifdef CORRADE_BUILD_DEPRECATED
@@ -1006,8 +1010,8 @@ class CORRADE_UTILITY_EXPORT String {
         MutableStringView exceptSuffix(char suffix) = delete;
         StringView exceptSuffix(char suffix) const = delete; /**< @overload */
         #else
-        template<class T, class = typename std::enable_if<std::is_same<typename std::decay<T>::type, char>::value>::type> MutableStringView exceptSuffix(T&& suffix) = delete;
-        template<class T, class = typename std::enable_if<std::is_same<typename std::decay<T>::type, char>::value>::type> StringView exceptSuffix(T&& suffix) const = delete;
+        template<class T, class = EnableIf<IsSame<UnCVRef<T>, char>::value>> MutableStringView exceptSuffix(T&& suffix) = delete;
+        template<class T, class = EnableIf<IsSame<UnCVRef<T>, char>::value>> StringView exceptSuffix(T&& suffix) const = delete;
         #endif
 
         #ifdef CORRADE_BUILD_DEPRECATED

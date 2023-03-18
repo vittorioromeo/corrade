@@ -40,14 +40,14 @@
 #include <emscripten.h>
 
 #elif defined(CORRADE_TARGET_WINDOWS)
-#define WIN32_LEAN_AND_MEAN 1
-#define VC_EXTRALEAN
 
 /* For isatty() on Windows. Needed by both ANSI and non-ANSI color printing. */
 #include <io.h>
 
 /* WINAPI-based colored output on Windows */
 #ifndef CORRADE_UTILITY_USE_ANSI_COLORS
+#define WIN32_LEAN_AND_MEAN 1
+#define VC_EXTRALEAN
 #include <windows.h>
 #include <wincon.h>
 #endif

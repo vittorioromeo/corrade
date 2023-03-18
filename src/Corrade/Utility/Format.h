@@ -32,10 +32,12 @@
  */
 
 #include <cstdio>
+#include <type_traits>
 
 #include "Corrade/Tags.h"
 #include "Corrade/Containers/Containers.h"
 #include "Corrade/Utility/UnderlyingType.h"
+#include "Corrade/Utility/EnableIf.h"
 #include "Corrade/Utility/visibility.h"
 
 #ifdef CORRADE_BUILD_DEPRECATED
@@ -300,7 +302,7 @@ template<> struct Formatter<Containers::ArrayView<const char>> {
 
 /* If the type is an enum, use its underlying type, assuming the enum is
    convertible to it */
-template<class T> struct Formatter<T, typename std::enable_if<std::is_enum<T>::value>::type>: Formatter<UnderlyingType<T>> {};
+template<class T> struct Formatter<T, EnableIf<isEnum<T>()>>: Formatter<UnderlyingType<T>> {};
 
 struct BufferFormatter {
     /* Needed for a sentinel value (C arrays can't have zero size) */

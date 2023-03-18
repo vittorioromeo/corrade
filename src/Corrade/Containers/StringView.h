@@ -1201,6 +1201,15 @@ Immutable, use @ref MutableStringView for mutable access.
 */
 typedef BasicStringView<const char> StringView;
 
+template<> String BasicStringView<const char>::join(const StringIterable&) const;
+template<> String BasicStringView<const char>::joinWithoutEmptyParts(const StringIterable&) const;
+extern template class BasicStringView<const char>;
+extern template BasicStringView<const char>::BasicStringView(const char* const, const StringViewFlags, std::nullptr_t) noexcept;
+extern template BasicStringView<const char>::BasicStringView(String&) noexcept;
+
+template<> template<> BasicStringView<const char>::BasicStringView(const String& string) noexcept;
+extern template BasicStringView<const char>::BasicStringView(const String&) noexcept;
+
 /**
 @brief Mutable string view
 @m_since_latest
@@ -1208,6 +1217,10 @@ typedef BasicStringView<const char> StringView;
 @see @ref StringView
 */
 typedef BasicStringView<char> MutableStringView;
+
+template<> String BasicStringView<char>::join(const StringIterable&) const;
+template<> String BasicStringView<char>::joinWithoutEmptyParts(const StringIterable&) const;
+extern template class BasicStringView<char>;
 
 /**
 @brief String view equality comparison

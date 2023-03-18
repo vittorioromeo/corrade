@@ -25,6 +25,7 @@
 */
 
 #include "Corrade/Containers/StringStl.h" /** @todo drop once Arguments is <string>-free */
+#include "Corrade/Containers/String.h"
 #include "Corrade/TestSuite/Tester.h"
 #include "Corrade/Utility/Arguments.h"
 #include "Corrade/Utility/DebugStl.h"

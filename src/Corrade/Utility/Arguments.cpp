@@ -46,6 +46,8 @@ extern char **environ;
 #include <emscripten.h>
 #endif
 #elif defined(CORRADE_TARGET_WINDOWS) && !defined(CORRADE_TARGET_WINDOWS_RT)
+#define WIN32_LEAN_AND_MEAN 1
+#define VC_EXTRALEAN
 #include <windows.h>
 #include "Corrade/Utility/Unicode.h"
 using Corrade::Utility::Unicode::widen;
